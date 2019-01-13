@@ -1,0 +1,43 @@
+{
+  "name": "@mconnect/validate-crud",
+  "version": "0.1.0",
+  "description": "Create-Read-Update-Delete Data operations: input params validation",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha --recursive --reporter mochawesome"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abbeymart/validate-crud.git"
+  },
+  "keywords": [
+    "validate",
+    "params",
+    "parameters",
+    "arguments",
+    "crud",
+    "create",
+    "read",
+    "update",
+    "delete",
+    "log",
+    "validation"
+  ],
+  "author": "Abi Akindele [abbeymart | mconnect.biz]",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/abbeymart/validate-crud/issues"
+  },
+  "homepage": "https://github.com/abbeymart/validate-crud#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "mochawesome": "^3.1.1"
+  },
+  "dependencies": {
+    "@mconnect/utils": "^0.1.0"
+  }
+}
