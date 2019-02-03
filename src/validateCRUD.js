@@ -1,20 +1,41 @@
 /**
- * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-01-12
+ * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-02-03
  * @Company: mConnect.biz | @License: MIT
  * @Description: @mconnect/validate-crud | CRUD activities-params/args validation
  */
 
 // Import required module(s)
-const utils = require('@mconnect/utils')();
+const utils           = require('@mconnect/utils')();
+const defaultMessages = require('./locales/mcMessages');
 
-function validateCrud( options ) {
+function validateCrud( options = {} ) {
     // options - params
-    // console.log('options: ', options);
-    const mcMessages    = options && options.messages && (typeof options.messages === 'object') ?
-                          options.messages : {};
+    const mcMessages    = options && options.messages && ( typeof options.messages === 'object' ) ?
+                          options.messages : defaultMessages;
     const maxQueryLimit = options && options.maxQueryLimit && ( typeof this.maxQueryLimit === 'number' ) ?
                           options.maxQueryLimit : 10000;
     return {
+        validateClearRecord( paramItems ) {
+            // Initialise error object and patterns matching:
+            let errors = {};
+
+            try {
+                if ( paramItems.coll ) {
+                    // Check input formats/patterns
+                    const testItem = utils.isStringAlpha(paramItems.coll);
+                    if ( ! testItem ) {
+                        errors.coll = mcMessages.isStringAlpha || 'format-error, collection name should be a string';
+                    }
+                } else {
+                    errors.coll = mcMessages.infoRequired || 'required-error';
+                }
+            } catch ( e ) {
+                console.error('Error validating clear-record(s) inputs');
+                errors.validationError = 'Error validating clear-record(s) inputs';
+            }
+
+            return errors;
+        },
         validateLoadRecord( paramItems ) {
             // Initialise error object and patterns matching:
             let errors = {};
@@ -24,7 +45,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isStringAlpha(paramItems.coll);
                     if ( ! testItem ) {
-                        errors.coll = mcMessages.isStringAlpha || 'format-error';
+                        errors.coll = mcMessages.isStringAlpha || 'format-error, collection name should be a string';
                     }
                 } else {
                     errors.coll = mcMessages.infoRequired || 'required-error';
@@ -34,7 +55,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isArrayType(paramItems.actionParams);
                     if ( ! testItem ) {
-                        errors.actionParams = mcMessages.isObject || 'format-error';
+                        errors.actionParams = mcMessages.isObject || 'format-error, actionParams should be an array';
                     }
                 } else {
                     errors.actionParams = mcMessages.infoRequired || 'required-error';
@@ -55,14 +76,14 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isStringAlpha(paramItems.token);
                     if ( ! testItem ) {
-                        errors.token = mcMessages.isStringAlpha || 'format-error';
+                        errors.token = mcMessages.isStringAlpha || 'format-error, token should be a string';
                     }
                 }
                 if ( paramItems.userInfo ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.userInfo);
                     if ( ! testItem ) {
-                        errors.userInfo = mcMessages.isObject || 'format-error';
+                        errors.userInfo = mcMessages.isObject || 'format-error, user-info should be an object';
                     }
                 }
                 if ( ! paramItems.token && Object.keys(paramItems.userInfo).length < 1 ) {
@@ -85,7 +106,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isStringAlpha(paramItems.coll);
                     if ( ! testItem ) {
-                        errors.coll = mcMessages.isStringAlpha || 'format-error';
+                        errors.coll = mcMessages.isStringAlpha || 'format-error, collection name should be a string';
                     }
                 } else {
                     errors.coll = mcMessages.infoRequired || 'required-error';
@@ -94,21 +115,21 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.projectParams);
                     if ( ! testItem ) {
-                        errors.projectParams = mcMessages.isObject || 'format-error';
+                        errors.projectParams = mcMessages.isObject || 'format-error, projectParams should be an object';
                     }
                 }
                 if ( paramItems.sortParams ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.sortParams);
                     if ( ! testItem ) {
-                        errors.sortParams = mcMessages.isObject || 'format-error';
+                        errors.sortParams = mcMessages.isObject || 'format-error, sortParams should be an object';
                     }
                 }
                 if ( paramItems.skip ) {
                     // Check input formats/patterns
                     const testItem = utils.isNumberDigit(paramItems.skip);
                     if ( ! testItem ) {
-                        errors.skip = mcMessages.numberFormat || 'format-error';
+                        errors.skip = mcMessages.numberFormat || 'format-error, skip should be a number';
                     }
                     if ( paramItems.skip < 0 ) {
                         errors.skipValue = 'skip cannot be less than 0 ';
@@ -118,7 +139,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isNumberDigit(paramItems.limit);
                     if ( ! testItem ) {
-                        errors.limit = mcMessages.numberFormat || 'format-error';
+                        errors.limit = mcMessages.numberFormat || 'format-error, limit should be a number';
                     }
                     if ( paramItems.limit > maxQueryLimit ) {
                         errors.limitValue = `limit cannot be greater than ${maxQueryLimit}`;
@@ -143,7 +164,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isStringAlpha(paramItems.coll);
                     if ( ! testItem ) {
-                        errors.coll = mcMessages.isStringAlpha || 'format-error';
+                        errors.coll = mcMessages.isStringAlpha || 'format-error, collection name should be a string';
                     }
                 } else {
                     errors.coll = mcMessages.infoRequired || 'required-error';
@@ -153,7 +174,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.queryParams);
                     if ( ! testItem ) {
-                        errors.queryParams = mcMessages.isObject || 'format-error';
+                        errors.queryParams = mcMessages.isObject || 'format-error, queryParams should be an object';
                     }
                 }
 
@@ -161,7 +182,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.projectParams);
                     if ( ! testItem ) {
-                        errors.projectParams = mcMessages.isObject || 'format-error';
+                        errors.projectParams = mcMessages.isObject || 'format-error, projectParams should be an object';
                     }
                 }
 
@@ -169,7 +190,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.sortParams);
                     if ( ! testItem ) {
-                        errors.sortParams = mcMessages.isObject || 'format-error';
+                        errors.sortParams = mcMessages.isObject || 'format-error, sortParams should be an object';
                     }
                 }
 
@@ -177,7 +198,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isArrayType(paramItems.docId);
                     if ( ! testItem ) {
-                        errors.docId = mcMessages.isArray || 'format-error';
+                        errors.docId = mcMessages.isArray || 'format-error, docId(s) should be an array';
                     }
                 }
 
@@ -185,7 +206,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isStringAlpha(paramItems.token);
                     if ( ! testItem ) {
-                        errors.token = mcMessages.isStringAlpha || 'format-error';
+                        errors.token = mcMessages.isStringAlpha || 'format-error, token should be a string';
                     }
                 }
 
@@ -193,7 +214,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isObjectType(paramItems.userInfo);
                     if ( ! testItem ) {
-                        errors.userInfo = mcMessages.isObject || 'format-error';
+                        errors.userInfo = mcMessages.isObject || 'format-error, userInfo should be an object';
                     }
                 }
 
@@ -206,7 +227,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isNumberDigit(paramItems.skip);
                     if ( ! testItem ) {
-                        errors.skip = mcMessages.numberFormat || 'format-error';
+                        errors.skip = mcMessages.numberFormat || 'format-error, skip should be a number';
                     }
                     if ( paramItems.skip < 0 ) {
                         errors.skipValue = 'skip cannot be less than 0 ';
@@ -216,7 +237,7 @@ function validateCrud( options ) {
                     // Check input formats/patterns
                     const testItem = utils.isNumberDigit(paramItems.limit);
                     if ( ! testItem ) {
-                        errors.limit = mcMessages.numberFormat || 'format-error';
+                        errors.limit = mcMessages.numberFormat || 'format-error, limit should be a number';
                     }
                     if ( paramItems.limit > maxQueryLimit ) {
                         errors.limitValue = `limit cannot be greater than ${maxQueryLimit}`;
