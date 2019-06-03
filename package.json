@@ -1,6 +1,6 @@
 {
   "name": "@mconnect/validate-crud",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Create-Read-Update-Delete Data operations: input params validation",
   "main": "index.js",
   "directories": {
@@ -38,6 +38,6 @@
     "mochawesome": "^3.1.1"
   },
   "dependencies": {
-    "@mconnect/utils": "^0.1.1"
+    "@mconnect/utils": "^0.2.0"
   }
 }
