@@ -1,6 +1,6 @@
 {
   "name": "@mconnect/validate-crud",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Create-Read-Update-Delete Data operations: input params validation",
   "main": "index.js",
   "directories": {
