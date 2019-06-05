@@ -1,12 +1,12 @@
 /**
- * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-06-02
+ * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-06-05
  * @Company: mConnect.biz | @License: MIT
  * @Description: @mconnect/validate-crud testing, validateLoad
  */
 
 const {suite, test, before} = require('mocha');
 const {mcMessages}          = require('../src/locales/getMessage');
-const validateCrud          = require('../index');
+const {ValidateCrud}        = require('../index');
 const ok                    = require('./assert');
 
 let loadParams = {
@@ -23,7 +23,7 @@ let mcValidate,
     };
 
 before(() => {
-    mcValidate = validateCrud(options);
+    mcValidate = ValidateCrud(options);
 });
 
 suite('@mconnect/validate-crud package Testing:', () => {
@@ -38,9 +38,10 @@ suite('@mconnect/validate-crud package Testing:', () => {
         test('should return errors', () => {
             loadParams = {
                 coll        : '',
-                actionParams: ''
+                actionParams: '',
             };
             const req  = mcValidate.validateLoadRecord(loadParams);
+            // console.log('req-res1: ', req);
             ok(Object.keys(req).length > 0, `response should return errors`);
         });
         test('should return correct error message', () => {
@@ -49,10 +50,11 @@ suite('@mconnect/validate-crud package Testing:', () => {
                 actionParams: ''
             };
             const res  = {
-                coll        : 'Information item is required',
-                actionParams: 'Information item is required'
+                coll        : mcMessages.infoRequired || 'required-error, info is required',
+                actionParams: mcMessages.infoRequired || 'required-error, info is required',
             };
             const req  = mcValidate.validateLoadRecord(loadParams);
+            // console.log('req-res2: ', req);
             ok(req.toString() === res.toString(), `response should return ${res.toString()}`);
         });
     });

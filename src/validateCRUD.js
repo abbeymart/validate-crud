@@ -1,5 +1,5 @@
 /**
- * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-06-03
+ * @Author: abbeymart | Abi Akindele | @Created: 2019-01-12 | @Updated: 2019-06-05
  * @Company: mConnect.biz | @License: MIT
  * @Description: @mconnect/validate-crud | CRUD activities-params/args validation
  */
@@ -8,12 +8,913 @@
 const utils        = require('@mconnect/utils')();
 const {mcMessages} = require('./locales/getMessage');
 
+function ValidateCrud(options = {}) {
+    // ensure a new instance is returned, if constructor function is called without new
+    if (typeof new.target === 'undefined') {
+        return new ValidateCrud(options);
+    }
+    // options - params
+    this.mcMessage     = options && options.messages && (typeof options.messages === 'object') ?
+                         options.messages : mcMessages;
+    this.maxQueryLimit = options && options.maxQueryLimit && (typeof parseInt(options.maxQueryLimit) === 'number') ?
+                         parseInt(options.maxQueryLimit) : 10000;
+}
+
+ValidateCrud.prototype.validateClearRecord  = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, collection name should be a string';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error';
+        }
+    } catch (e) {
+        console.error('Error validating clear-record(s) inputs');
+        errors.validationError = 'Error validating clear-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateLoadRecord   = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, collection name should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+
+        if (paramItems.actionParams) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.actionParams);
+            if (!testItem) {
+                errors.actionParams = this.mcMessage.isArray || 'format-error, actionParams should be an array';
+            }
+        } else {
+            errors.actionParams = this.mcMessage.infoRequired || 'required-error; info is required';
+        }
+    } catch (e) {
+        console.error('Error validating load-record(s) inputs');
+        errors.validationError = 'Error validating load-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateCheckAccess  = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, token should be a string/alphanumeric';
+            }
+        }
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, user-info should be an object';
+            }
+        }
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfoRequired = 'userInfo or token is required';
+            errors.tokenRequired    = 'userInfo or token is required';
+        }
+    } catch (e) {
+        console.error('Error validating check-access inputs');
+        errors.validationError = 'Error validating check-access inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateGetAllRecord = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, collection name should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.projectParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.projectParams);
+            if (!testItem) {
+                errors.projectParams = this.mcMessage.isObject || 'format-error, projectParams should be an object';
+            }
+        }
+        if (paramItems.sortParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.sortParams);
+            if (!testItem) {
+                errors.sortParams = this.mcMessage.isObject || 'format-error, sortParams should be an object';
+            }
+        }
+        if (paramItems.skip) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.skip);
+            if (!testItem) {
+                errors.skip = this.mcMessage.numberFormat || 'format-error, skip should be a number';
+            }
+            if (parseInt(paramItems.skip) < 0) {
+                errors.skipValue = 'skip cannot be less than 0 ';
+            }
+        }
+        if (paramItems.limit) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.limit);
+            if (!testItem) {
+                errors.limit = this.mcMessage.numberFormat || 'format-error, limit should be a number';
+            }
+            if (parseInt(paramItems.limit) > this.maxQueryLimit) {
+                errors.limitValue = `limit cannot be greater than ${this.maxQueryLimit}`;
+            }
+            if (parseInt(paramItems.limit) < 1) {
+                errors.limitValue = 'limit cannot be less than 1 ';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating get-record(s) inputs');
+        errors.validationError = 'Error validating get-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateGetRecord    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, collection name should be a string';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+
+        if (paramItems.queryParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.queryParams);
+            if (!testItem) {
+                errors.queryParams = this.mcMessage.isObject || 'format-error, queryParams should be an object';
+            }
+        }
+
+        if (paramItems.projectParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.projectParams);
+            if (!testItem) {
+                errors.projectParams = this.mcMessage.isObject || 'format-error, projectParams should be an object';
+            }
+        }
+
+        if (paramItems.sortParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.sortParams);
+            if (!testItem) {
+                errors.sortParams = this.mcMessage.isObject || 'format-error, sortParams should be an object';
+            }
+        }
+
+        if (paramItems.docId) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.docId);
+            if (!testItem) {
+                errors.docId = this.mcMessage.isArray || 'format-error, docId(s) should be an array';
+            }
+        }
+
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, token should be a string/alphanumeric';
+            }
+        }
+
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, userInfo should be an object';
+            }
+        }
+
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfoRequired = 'token or userInfo is required';
+            errors.tokenRequired    = 'token or userInfo is required';
+        }
+
+        if (paramItems.skip) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.skip);
+            if (!testItem) {
+                errors.skip = this.mcMessage.numberFormat || 'format-error, skip should be a number';
+            }
+            if (parseInt(paramItems.skip) < 0) {
+                errors.skipValue = 'skip cannot be less than 0 ';
+            }
+        }
+        if (paramItems.limit) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.limit);
+            if (!testItem) {
+                errors.limit = this.mcMessage.numberFormat || 'format-error, limit should be a number';
+            }
+            if (parseInt(paramItems.limit) > this.maxQueryLimit) {
+                errors.limitValue = `limit cannot be greater than ${this.maxQueryLimit}`;
+            }
+            if (parseInt(paramItems.limit) < 1) {
+                errors.skipLimit = 'limit-value cannot be less than 1';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating get-record(s) inputs');
+        errors.validationError = 'Error validating get-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateSaveRecord   = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+
+        if (paramItems.docId) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.docId);
+            if (!testItem) {
+                errors.docId = this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        }
+
+        if (paramItems.actionParams) {
+            // Check input formats/patterns:  array
+            const testObject = utils.isArrayType(paramItems.actionParams);
+            if (!testObject) {
+                errors.actionParams = this.mcMessage.isArray || 'format-error, should be an array';
+            }
+        } else {
+            errors.queryParams = this.mcMessage.infoRequired || 'required-error, info required';
+        }
+
+        if (paramItems.queryParams) {
+            // Check input formats/patterns: object or array
+            const testObject = utils.isObjectType(paramItems.queryParams);
+            if (!testObject) {
+                errors.queryParams = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (paramItems.existParams) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.existParams);
+            if (!testItem) {
+                errors.existParams = this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        } else {
+            errors.existParams = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfoRequired = 'token or userInfo is required';
+            errors.tokenRequired    = 'token or userInfo is required';
+        }
+    } catch (e) {
+        console.error('Error validating save-record(s) inputs');
+        errors.validationError = 'Error validating save-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateSaveRecords  = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info required';
+        }
+
+        if (paramItems.actionParams) {
+            // Check input formats/patterns:  array
+            const testObject = utils.isArrayType(paramItems.actionParams);
+            if (!testObject) {
+                errors.actionParams = this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        } else {
+            errors.queryParams = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+    } catch (e) {
+        console.error('Error validating save-record(s) inputs');
+        errors.validationError = 'Error validating save-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateCreateRecord = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = [];
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info required';
+        }
+        if (paramItems.queryParams) {
+            // Check input formats/patterns: object or array
+            const testObject = utils.isObjectType(paramItems.queryParams) || utils.isArrayType(paramItems.queryParams);
+            if (!testObject) {
+                errors.queryParams = this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray || 'format-error, should be an object{} or array[]';
+            }
+        }
+        if (paramItems.existParams) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.existParams);
+            if (!testItem) {
+                errors.existParams = this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        }
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfo = 'userInfo or token is required';
+            errors.token    = 'userInfo or token is required';
+        }
+    } catch (e) {
+        console.error('Error validating create-record(s) inputs');
+        errors.validationError = 'Error validating create-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateUpdateRecord = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info required';
+        }
+        if (paramItems.updateParams) {
+            // Check input formats/patterns: object or array
+            const testObject = utils.isObjectType(paramItems.updateParams) || utils.isArrayType(paramItems.updateParams);
+            if (!testObject) {
+                errors.updateParams = (this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray) || 'format-error, should be an object{} or array[]';
+            }
+        }
+        if (paramItems.queryParams) {
+            // Check input formats/patterns: object
+            const testObject = utils.isObjectType(paramItems.queryParams);
+            if (!testObject) {
+                errors.queryParams = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+        if (paramItems.existParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.existParams);
+            if (!testItem) {
+                errors.existParams = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+        if (paramItems.docId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.docId) || utils.isArrayType(paramItems.docId);
+            if (!testItem) {
+                errors.docId = this.mcMessage.isStringAlpha + ' OR ' + this.mcMessage.isArray || 'format-error, should be a string/alphanumeric or an array[]';
+            }
+        }
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfo = 'userInfo or token is required';
+            errors.token    = 'userInfo or token is required';
+        }
+
+        // match docId(string) to updateParams(object) || docId(array) to updateParams(array)
+        if (typeof paramItems.docId === 'string') {
+            if (typeof paramItems.updateParams !== 'object') {
+                errors.updateParamsRec = (this.mcMessage.isObject + ' :: for single record update') || 'format-error, should be an object{}';
+            }
+        }
+        if (Array.isArray(paramItems.docId)) {
+            if (!Array.isArray(paramItems.updateParams)) {
+                errors.updateParamsRec = (this.mcMessage.isArray + ' :: for multiple records update') || 'format-error, should be an array[]';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating update-record(s) inputs');
+        errors.validationError = 'Error validating update-record(s) inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateDeleteRecord = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+
+        if (paramItems.queryParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.queryParams);
+            if (!testItem) {
+                errors.queryParams = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (paramItems.docId) {
+            // Check input formats/patterns
+            const testItem = utils.isArrayType(paramItems.docId);
+            if (!testItem) {
+                errors.docId = this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        }
+
+        if (paramItems.docId.length < 1 && Object.keys(paramItems.queryParams).length < 1) {
+            errors.docIdRequired       = 'docId or queryParams is required';
+            errors.queryParamsRequired = 'docId or queryParams is required';
+        }
+
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, should a string/alphanumeric';
+            }
+        }
+
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+
+        if (!paramItems.token && Object.keys(paramItems.userInfo).length < 1) {
+            errors.userInfoRequired = 'token or userInfo is required';
+            errors.tokenRequired    = 'token or userInfo is required';
+        }
+
+    } catch (e) {
+        console.error('Error validating delete-record(s) inputs');
+        errors.validationError = 'Error validating delete-record(s) inputs';
+    }
+
+    return errors;
+
+};
+
+ValidateCrud.prototype.validateReadLog      = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.collParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.collParams);
+            if (!testItem) {
+                errors.collParams = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateCreateLog    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.collParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.collParams) || utils.isArrayType(paramItems.collParams);
+            if (!testItem) {
+                errors.collParams = this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray || 'format-error, should an object{} or array[]';
+            }
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateUpdateLog    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.collOldParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.collOldParams) || utils.isArrayType(paramItems.collOldParams);
+            if (!testItem) {
+                errors.collOldParams = (this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray) || 'format-error, should be an object{} or array[]';
+            }
+        }
+        if (paramItems.collNewParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.collNewParams) || utils.isArrayType(paramItems.collNewParams);
+            if (!testItem) {
+                errors.collNewParams = this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray || 'format-error, should be an array[]';
+            }
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateDeleteLog    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.collParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.collParams) || utils.isArrayType(paramItems.collParams);
+            if (!testItem) {
+                errors.collParams = this.mcMessage.isObject + ' OR ' + this.mcMessage.isArray || 'format-error, should be an object{} or array[]';
+            }
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateSearchLog    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.coll) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.coll);
+            if (!testItem) {
+                errors.coll = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.coll = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.queryParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.queryParams);
+            if (!testItem) {
+                errors.queryParams = this.mcMessage.isObject || 'format-error, should be an object';
+            }
+        }
+        if (paramItems.docId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.docId);
+            if (!testItem) {
+                errors.docId = this.mcMessage.isArray || 'format-error, should be an array';
+            }
+        }
+        if (paramItems.token) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.token);
+            if (!testItem) {
+                errors.token = this.mcMessage.isStringAlpha || 'format-error, should a string/alphanumeric';
+            }
+        }
+        if (paramItems.userInfo) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.userInfo);
+            if (!testItem) {
+                errors.userInfo = this.mcMessage.isObject || 'format-error, should be an object{}';
+            }
+        }
+        if (paramItems.skip) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.skip);
+            if (!testItem) {
+                errors.skip = this.mcMessage.numberFormat || 'format-error, skip should be a number';
+            }
+            if (parseInt(paramItems.skip) < 0) {
+                errors.skipValue = 'skip cannot be less than 0 ';
+            }
+        }
+        if (paramItems.limit) {
+            // Check input formats/patterns
+            const testItem = utils.isNumberDigit(paramItems.limit);
+            if (!testItem) {
+                errors.limit = this.mcMessage.numberFormat || 'format-error, limit should be a number';
+            }
+            if (parseInt(paramItems.limit) > this.maxQueryLimit) {
+                errors.limitValue = `limit cannot be greater than ${this.maxQueryLimit}`;
+            }
+            if (parseInt(paramItems.limit) < 1) {
+                errors.skipLimit = 'limit-value cannot be less than 1';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateLoginLog     = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.loginParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.loginParams) || utils.isArrayType(paramItems.loginParams);
+            if (!testItem) {
+                errors.loginParams = `${this.mcMessage.isObject} OR ${this.mcMessage.isArray}` || 'format-error, should an object{} or array[]';
+            }
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateLogoutLog    = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.loginParams) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.loginParams) || utils.isArrayType(paramItems.loginParams);
+            if (!testItem) {
+                errors.loginParams = `${this.mcMessage.isObject} OR ${this.mcMessage.isArray}` || 'format-error, should be an object{} or array[]';
+            }
+        }
+
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userInfo);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+
+    return errors;
+};
+
+ValidateCrud.prototype.validateStateRecord  = function (paramItems) {
+    // Initialise error object and patterns matching:
+    let errors = {};
+
+    try {
+        if (paramItems.namespace) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.namespace);
+            if (!testItem) {
+                errors.namespace = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        }
+        if (paramItems.key) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.value);
+            if (!testItem) {
+                errors.key = this.mcMessage.isStringAlpha || 'format-error, should be a string/alphanumeric';
+            }
+        } else {
+            errors.key = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.value) {
+            // Check input formats/patterns
+            const testItem = utils.isObjectType(paramItems.value)
+                || utils.isArrayType(paramItems.value)
+                || utils.isStringAlpha(paramItems.value)
+                || utils.isNumberDigit(paramItems.value);
+            if (!testItem) {
+                errors.value = `${this.mcMessage.isObject} OR ${this.mcMessage.isArray} OR ${this.mcMessage.isStringAlpha} OR ${this.mcMessage.numberFormat}` ||
+                    'format-error, should be an object{} or an array[] or a string/alphanumeric';
+            }
+        } else {
+            errors.value = this.mcMessage.infoRequired || 'required-error, info is required';
+        }
+        if (paramItems.userId) {
+            // Check input formats/patterns
+            const testItem = utils.isStringAlpha(paramItems.userId);
+            if (!testItem) {
+                errors.userId = this.mcMessage.isStringAlpha || 'format-error, should a string/alphanumeric';
+            }
+        }
+    } catch (e) {
+        console.error('Error validating audit-log inputs');
+        errors.validationError = 'Error validating audit-log inputs';
+    }
+
+    return errors;
+};
+
+
+// for legacy codes support
 function validateCrud(options = {}) {
     // options - params
     const mcMessage     = options && options.messages && (typeof options.messages === 'object') ?
                           options.messages : mcMessages;
-    const maxQueryLimit = options && options.maxQueryLimit && (typeof parseInt(this.maxQueryLimit) === 'number') ?
-                          parseInt(options.maxQueryLimit) : 100000;
+    const maxQueryLimit = options && options.maxQueryLimit && (typeof parseInt(options.maxQueryLimit) === 'number') ?
+                          parseInt(options.maxQueryLimit) : 10000;
     return {
         validateClearRecord(paramItems) {
             // Initialise error object and patterns matching:
@@ -887,4 +1788,4 @@ function validateCrud(options = {}) {
     }
 }
 
-module.exports = validateCrud;
+module.exports = {validateCrud, ValidateCrud};
